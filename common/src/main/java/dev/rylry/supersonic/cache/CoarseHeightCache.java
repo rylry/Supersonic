@@ -23,8 +23,6 @@ public final class CoarseHeightCache {
 
     int levelMaxY = level.getMinY() + level.getHeight();
 
-    Constants.LOG.info("Creating new height cache for dimension {} of height {}",
-        level.dimension().identifier(), levelMaxY);
     return DIMENSIONS.computeIfAbsent(level.dimension(), key -> {
       Constants.LOG.info("Creating new height cache for dimension {} of height {}",
           level.dimension().identifier(), levelMaxY);
