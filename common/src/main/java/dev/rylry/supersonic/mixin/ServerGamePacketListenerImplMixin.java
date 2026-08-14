@@ -13,12 +13,13 @@ import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.At;
 import com.llamalad7.mixinextras.sugar.Local;
 
+import dev.rylry.supersonic.chunk.SupersonicChunkConfig;
 import dev.rylry.supersonic.movement.SupersonicMovement;
 
 @Mixin(ServerGamePacketListenerImpl.class)
 public abstract class ServerGamePacketListenerImplMixin {
-  // Removes the "moved too quickly" check above highest block in a chunk so
-  // players can go as fast as they want
+  // Removes the "moved too quickly" behavior when players meet certain conditions
+  // so players can go as fast as they want
   @WrapOperation(method = "handleMovePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;shouldCheckPlayerMovement(Z)Z"), require = 1)
   private boolean supersonic$disableMovedTooQuickly(
       ServerGamePacketListenerImpl instance,
@@ -32,8 +33,11 @@ public abstract class ServerGamePacketListenerImplMixin {
       @Local(name = "startX") double serverX,
       @Local(name = "startY") double serverY,
       @Local(name = "startZ") double serverZ) {
-    if (SupersonicMovement.canUseDirectMovement(level, new Vec3(serverX, serverY, serverZ),
-        new Vec3(clientX, clientY, clientZ))) {
+    Vec3 start = new Vec3(serverX, serverY, serverZ);
+    Vec3 end = new Vec3(clientX, clientY, clientZ);
+    double horizontalDistance = Math.hypot(end.x - start.x, end.z - start.z);
+    if (horizontalDistance >= SupersonicChunkConfig.get().directMovementMinSpeed()
+        && SupersonicMovement.canUseDirectMovement(level, start, end)) {
       return false;
     } else {
       return original.call(instance, isFallFlying);
@@ -46,6 +50,6 @@ public abstract class ServerGamePacketListenerImplMixin {
   // of packets makes sense.
   @ModifyConstant(method = "handleMovePlayer", constant = @Constant(intValue = 5))
   private int supersonic$increasePacketLimit(int original) {
-    return 30;
+    return SupersonicChunkConfig.get().movementPacketLimit();
   }
 }

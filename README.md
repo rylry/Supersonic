@@ -20,4 +20,5 @@ The project structure is based on Jaredlll08's [MultiLoader Template](https://gi
 
 ## License
 
-Supersonic is released under CC0 1.0. See [LICENSE](LICENSE).
+Supersonic is released under the GNU Lesser General Public License v3.0.
+See [LICENSE](LICENSE).

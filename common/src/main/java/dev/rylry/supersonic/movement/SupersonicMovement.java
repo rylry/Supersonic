@@ -3,11 +3,25 @@ package dev.rylry.supersonic.movement;
 import dev.rylry.supersonic.cache.CoarseHeightCache;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.phys.Vec3;
 
 public class SupersonicMovement {
+  public static boolean isPlayerControlled(Entity entity) {
+    if (entity instanceof ServerPlayer) {
+      return true;
+    }
+    for (Entity passenger : entity.getIndirectPassengers()) {
+      if (passenger instanceof ServerPlayer) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public static boolean canUseDirectMovement(ServerLevel level, Vec3 start, Vec3 end) {
     int chunkX = SectionPos.blockToSectionCoord(start.x);
     int chunkZ = SectionPos.blockToSectionCoord(start.z);
@@ -49,7 +63,7 @@ public class SupersonicMovement {
 
       int terrainHeight = CoarseHeightCache.get(level, pos);
 
-      if (lowestY <= terrainHeight && !(level.getChunkSource().hasChunk(chunkX, chunkZ))) {
+      if (lowestY <= terrainHeight && level.getChunkSource().getChunkNow(chunkX, chunkZ) == null) {
         return false;
       }
 

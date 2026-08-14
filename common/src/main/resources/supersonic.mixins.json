@@ -4,7 +4,11 @@
   "package": "dev.rylry.supersonic.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "ServerGamePacketListenerImplMixin"
+    "ServerGamePacketListenerImplMixin",
+    "EntityFluidInteractionMixin",
+    "BlockCollisionsMixin",
+    "ChunkMapMixin",
+    "FixedPlayerDistanceChunkTrackerMixin"
   ],
   "client": [],
   "server": [],

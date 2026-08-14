@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import dev.rylry.supersonic.Constants;
+import dev.rylry.supersonic.chunk.SupersonicChunkConfig;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -21,11 +22,15 @@ public final class CoarseHeightCache {
     int regionZ = pos.getRegionZ();
     long regionKey = ChunkPos.pack(regionX, regionZ);
 
-    int levelMaxY = level.getMinY() + level.getHeight();
+    String dimension = level.dimension().identifier().toString();
+    int levelMaxY = SupersonicChunkConfig.get().height(
+        dimension,
+        level.getMinY() + level.getHeight()
+    );
 
     return DIMENSIONS.computeIfAbsent(level.dimension(), key -> {
       Constants.LOG.info("Creating new height cache for dimension {} of height {}",
-          level.dimension().identifier(), levelMaxY);
+          dimension, levelMaxY);
       return new Long2ObjectOpenHashMap<>();
     }).computeIfAbsent(regionKey, key -> new HeightRegion(levelMaxY));
 

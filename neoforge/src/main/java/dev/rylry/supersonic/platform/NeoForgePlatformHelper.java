@@ -1,5 +1,7 @@
 package dev.rylry.supersonic.platform;
 
+import java.nio.file.Path;
+
 import dev.rylry.supersonic.platform.services.IPlatformHelper;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
@@ -22,5 +24,10 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
     public boolean isDevelopmentEnvironment() {
 
         return !FMLLoader.getCurrent().isProduction();
+    }
+
+    @Override
+    public Path getConfigDirectory() {
+        return FMLLoader.getCurrent().getGameDir().resolve("config");
     }
 }
