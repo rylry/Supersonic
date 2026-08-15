@@ -101,6 +101,9 @@ public final class ChunkAdmissionController {
             state.lastGrowthTick = this.tick;
         }
         boolean changedAtSameCenter = state.center != null && state.center.equals(center) && state.radius != chosen;
+        if (state.center != null && !state.center.equals(center)) {
+            state.recentSourceRadii.put(state.center.pack(), new SourceRadius(state.radius, this.tick + 200));
+        }
         state.center = center;
         state.radius = chosen;
         if (changedAtSameCenter && this.ticketTracker != null) {
@@ -127,6 +130,9 @@ public final class ChunkAdmissionController {
         this.tick = currentTick;
         this.regionHeaders.clear();
         this.players.keySet().removeIf(player -> player.isRemoved() || player.level() != this.level);
+        for (PlayerState state : this.players.values()) {
+            state.recentSourceRadii.values().removeIf(source -> source.expiresAtTick <= this.tick);
+        }
 
         var iterator = this.outstanding.entrySet().iterator();
         while (iterator.hasNext()) {
@@ -169,6 +175,11 @@ public final class ChunkAdmissionController {
     }
 
     private int maximumRadius(PlayerState state, int normalRadius) {
+        // Keep load shedding active until movement slows instead of admitting a
+        // large isolated batch during a brief recovery in the tick-time average.
+        if (state.radius == 0) {
+            return 0;
+        }
         if (state.radius >= normalRadius) {
             return normalRadius;
         }
@@ -239,9 +250,13 @@ public final class ChunkAdmissionController {
 
     private int radiusAt(ChunkPos center) {
         int radius = -1;
-        for (Map.Entry<ServerPlayer, PlayerState> entry : this.players.entrySet()) {
-            if (center.equals(entry.getKey().chunkPosition())) {
-                radius = Math.max(radius, entry.getValue().radius);
+        for (PlayerState state : this.players.values()) {
+            if (center.equals(state.center)) {
+                radius = Math.max(radius, state.radius);
+            }
+            SourceRadius recent = state.recentSourceRadii.get(center.pack());
+            if (recent != null) {
+                radius = Math.max(radius, recent.radius);
             }
         }
         return radius;
@@ -257,6 +272,7 @@ public final class ChunkAdmissionController {
         }
 
         private ChunkPos center;
+        private final Map<Long, SourceRadius> recentSourceRadii = new HashMap<>();
         private int radius;
         private long lastGrowthTick = Long.MIN_VALUE / 2;
         private Vec3 lastPosition;
@@ -264,6 +280,8 @@ public final class ChunkAdmissionController {
         private boolean fast;
         private int reservedCost;
     }
+
+    private record SourceRadius(int radius, long expiresAtTick) {}
 
     private static final class GlobalBudget {
         private double balance = SupersonicChunkConfig.get().capacity();
