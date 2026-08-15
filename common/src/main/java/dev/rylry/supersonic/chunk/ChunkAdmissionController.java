@@ -63,7 +63,7 @@ public final class ChunkAdmissionController {
             return vanillaLevel;
         }
         controller.ticketTracker = bridge;
-        int radius = controller.radiusAt(ChunkPos.unpack(chunkPos));
+        int radius = controller.radiusAt(new ChunkPos(chunkPos));
         if (radius < 0) {
             return vanillaLevel;
         }
@@ -105,7 +105,7 @@ public final class ChunkAdmissionController {
         state.radius = chosen;
         if (changedAtSameCenter && this.ticketTracker != null) {
             int sourceLevel = chosen == 0 ? serverViewDistance + 1 : Math.max(0, serverViewDistance - chosen);
-            this.ticketTracker.supersonic$refresh(center.pack(), sourceLevel);
+            this.ticketTracker.supersonic$refresh(center.toLong(), sourceLevel);
         }
         if (state.fast) {
             this.fastPlayersRemaining = Math.max(0, this.fastPlayersRemaining - 1);
@@ -131,8 +131,8 @@ public final class ChunkAdmissionController {
         var iterator = this.outstanding.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<Long, Integer> entry = iterator.next();
-            ChunkPos pos = ChunkPos.unpack(entry.getKey());
-            if (this.level.getChunkSource().getChunkNow(pos.x(), pos.z()) != null) {
+            ChunkPos pos = new ChunkPos(entry.getKey());
+            if (this.level.getChunkSource().getChunkNow(pos.x, pos.z) != null) {
                 this.budget.complete(entry.getValue());
                 iterator.remove();
             }
@@ -187,10 +187,10 @@ public final class ChunkAdmissionController {
 
     private void admit(ChunkTrackingView previous, ChunkTrackingView next) {
         Set<Long> admitted = new HashSet<>();
-        ChunkTrackingView.difference(previous, next, pos -> admitted.add(pos.pack()), ignored -> {});
+        ChunkTrackingView.difference(previous, next, pos -> admitted.add(pos.toLong()), ignored -> {});
         for (long packed : admitted) {
             if (!this.outstanding.containsKey(packed)) {
-                int cost = cost(ChunkPos.unpack(packed));
+                int cost = cost(new ChunkPos(packed));
                 if (cost > 0) {
                     this.outstanding.put(packed, cost);
                     this.budget.admit(cost);
@@ -200,21 +200,21 @@ public final class ChunkAdmissionController {
     }
 
     private int cost(ChunkPos pos) {
-        if (this.outstanding.containsKey(pos.pack()) || this.level.getChunkSource().getChunkNow(pos.x(), pos.z()) != null) {
+        if (this.outstanding.containsKey(pos.toLong()) || this.level.getChunkSource().getChunkNow(pos.x, pos.z) != null) {
             return 0;
         }
         return SupersonicChunkConfig.get().cost(classify(pos));
     }
 
     private ChunkState classify(ChunkPos pos) {
-        if (this.level.getChunkSource().getChunkNow(pos.x(), pos.z()) != null) {
+        if (this.level.getChunkSource().getChunkNow(pos.x, pos.z) != null) {
             return ChunkState.RESIDENT;
         }
         return generatedOnDisk(pos) ? ChunkState.GENERATED_ON_DISK : ChunkState.UNGENERATED;
     }
 
     private boolean generatedOnDisk(ChunkPos pos) {
-        long regionKey = ChunkPos.pack(pos.getRegionX(), pos.getRegionZ());
+        long regionKey = ChunkPos.asLong(pos.getRegionX(), pos.getRegionZ());
         byte[] header = this.regionHeaders.computeIfAbsent(regionKey, ignored -> readRegionHeader(pos));
         int index = (pos.getRegionLocalX() + pos.getRegionLocalZ() * 32) * Integer.BYTES;
         return header.length == 4096 && (header[index] != 0 || header[index + 1] != 0 || header[index + 2] != 0 || header[index + 3] != 0);

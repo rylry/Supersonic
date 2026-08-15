@@ -2,10 +2,9 @@
   "required": true,
   "minVersion": "0.8",
   "package": "dev.rylry.supersonic.mixin",
-  "compatibilityLevel": "JAVA_25",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ServerGamePacketListenerImplMixin",
-    "EntityFluidInteractionMixin",
     "BlockCollisionsMixin",
     "ChunkMapMixin",
     "FixedPlayerDistanceChunkTrackerMixin"

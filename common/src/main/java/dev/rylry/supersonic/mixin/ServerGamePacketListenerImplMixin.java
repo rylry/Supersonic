@@ -20,27 +20,26 @@ import dev.rylry.supersonic.movement.SupersonicMovement;
 public abstract class ServerGamePacketListenerImplMixin {
   // Removes the "moved too quickly" behavior when players meet certain conditions
   // so players can go as fast as they want
-  @WrapOperation(method = "handleMovePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;shouldCheckPlayerMovement(Z)Z"), require = 1)
+  @WrapOperation(method = "handleMovePlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerGamePacketListenerImpl;isSingleplayerOwner()Z"), require = 1)
   private boolean supersonic$disableMovedTooQuickly(
       ServerGamePacketListenerImpl instance,
-      boolean isFallFlying,
       Operation<Boolean> original,
 
-      @Local(name = "level") ServerLevel level,
-      @Local(name = "targetX") double clientX,
-      @Local(name = "targetY") double clientY,
-      @Local(name = "targetZ") double clientZ,
-      @Local(name = "startX") double serverX,
-      @Local(name = "startY") double serverY,
-      @Local(name = "startZ") double serverZ) {
+      @Local(ordinal = 0) ServerLevel level,
+      @Local(ordinal = 0) double clientX,
+      @Local(ordinal = 1) double clientY,
+      @Local(ordinal = 2) double clientZ,
+      @Local(ordinal = 3) double serverX,
+      @Local(ordinal = 4) double serverY,
+      @Local(ordinal = 5) double serverZ) {
     Vec3 start = new Vec3(serverX, serverY, serverZ);
     Vec3 end = new Vec3(clientX, clientY, clientZ);
     double horizontalDistance = Math.hypot(end.x - start.x, end.z - start.z);
     if (horizontalDistance >= SupersonicChunkConfig.get().directMovementMinSpeed()
         && SupersonicMovement.canUseDirectMovement(level, start, end)) {
-      return false;
+      return true;
     } else {
-      return original.call(instance, isFallFlying);
+      return original.call(instance);
     }
   }
 

@@ -9,7 +9,7 @@ public class Supersonic implements ModInitializer {
     @Override
     public void onInitialize() {
 
-        ServerChunkEvents.CHUNK_LOAD.register((level, chunk, generated) -> {
+        ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> {
             CoarseHeightCache.onChunkLoaded(level, chunk);
         });
 

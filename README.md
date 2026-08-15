@@ -2,7 +2,7 @@
 
 Supersonic is a Minecraft mod that allows players and other entities to move faster than chunk loading would normally permit.
 
-It supports Fabric and NeoForge for Minecraft 26.2 and requires Java 25.
+It supports Fabric and NeoForge for Minecraft 1.21.1 and requires Java 21.
 
 ## Building
 

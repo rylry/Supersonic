@@ -1,6 +1,7 @@
 package dev.rylry.supersonic;
 
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
@@ -20,16 +21,16 @@ public class Supersonic {
     }
 
     private void onChunkLoaded(ChunkEvent.Load event) {
-        if (!(event.getLevel() instanceof ServerLevel level)) {
+        if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) {
             return;
         }
-        CoarseHeightCache.onChunkLoaded(level, event.getChunk());
+        CoarseHeightCache.onChunkLoaded(level, chunk);
     }
 
     private void onChunkUnloaded(ChunkEvent.Unload event) {
-        if (!(event.getLevel() instanceof ServerLevel level)) {
+        if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) {
             return;
         }
-        CoarseHeightCache.onChunkUnloaded(level, event.getChunk());
+        CoarseHeightCache.onChunkUnloaded(level, chunk);
     }
 }

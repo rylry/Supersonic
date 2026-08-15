@@ -23,11 +23,11 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
     @Override
     public boolean isDevelopmentEnvironment() {
 
-        return !FMLLoader.getCurrent().isProduction();
+        return !FMLLoader.isProduction();
     }
 
     @Override
     public Path getConfigDirectory() {
-        return FMLLoader.getCurrent().getGameDir().resolve("config");
+        return FMLLoader.getGamePath().resolve("config");
     }
 }

@@ -20,12 +20,12 @@ public final class CoarseHeightCache {
   private static HeightRegion region(ServerLevel level, ChunkPos pos) {
     int regionX = pos.getRegionX();
     int regionZ = pos.getRegionZ();
-    long regionKey = ChunkPos.pack(regionX, regionZ);
+    long regionKey = ChunkPos.asLong(regionX, regionZ);
 
-    String dimension = level.dimension().identifier().toString();
+    String dimension = level.dimension().location().toString();
     int levelMaxY = SupersonicChunkConfig.get().height(
         dimension,
-        level.getMinY() + level.getHeight()
+        level.getMinBuildHeight() + level.getHeight()
     );
 
     return DIMENSIONS.computeIfAbsent(level.dimension(), key -> {
@@ -45,7 +45,7 @@ public final class CoarseHeightCache {
   }
 
   public static void updateFromChunk(ServerLevel level, LevelChunk chunk) {
-    int maxY = level.getMinY();
+    int maxY = level.getMinBuildHeight();
     Heightmap heightmap = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING);
     for (int x = 0; x < 16; x++) {
       for (int z = 0; z < 16; z++) {
